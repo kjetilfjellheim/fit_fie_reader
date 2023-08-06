@@ -1,5 +1,5 @@
 [package]
-name = "file_parser"
+name = "iawk"
 version = "0.1.0"
 edition = "2021"
 authors = ["Kjetil Fjellheim <kjetil@forgottendonkey.net>"]
