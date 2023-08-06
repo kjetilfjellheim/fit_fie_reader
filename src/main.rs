@@ -69,16 +69,16 @@ fn setup() -> clap::ArgMatches {
 fn get_arguments<'a>(argument_matcher: clap::ArgMatches) -> Arguments {
     let input: Box<dyn Read> = get_input(&argument_matcher);
     let output: Box<dyn Write> = get_output(&argument_matcher);
-    let regxp: Vec<String> = get_regexp(&argument_matcher);
+    let regexp: Vec<String> = get_regexp(&argument_matcher);
     let before_lines: i32 = get_argument_value(&argument_matcher, "before", 0);
     let after_lines: i32 = get_argument_value(&argument_matcher, "after", 0);
 
     Arguments {
-        input: input,
-        output: output,
-        regexp: regxp,
-        before_lines: before_lines,
-        after_lines: after_lines,
+        input,
+        output,
+        regexp,
+        before_lines,
+        after_lines,
     }
 }
 
@@ -116,10 +116,10 @@ fn get_argument_value(
     argument_name: &str,
     default: i32,
 ) -> i32 {
-    argument_matcher
-        .get_one(argument_name)
+    *argument_matcher
+        .get_one::<i32>(argument_name)
         .unwrap_or(&default)
-        .clone()
+
 }
 
 fn parse(arguments: Arguments) {
@@ -168,12 +168,8 @@ fn is_match_any(line: &String, regexps: &Vec<Regex>) -> bool {
 
 fn output_before_lines(before_buffer: &mut CircularBuffer<String>, output: &mut Box<dyn Write>) {
     while before_buffer.size() > 0 {
-        let before_line = before_buffer.remove();
-        match before_line {
-            Ok(before_line) => {
-                output_line(&before_line, output);
-            }
-            Err(_) => {}
+        if let Ok(before_line) = before_buffer.remove() {
+            output_line(&before_line, output);
         }
     }
 }
