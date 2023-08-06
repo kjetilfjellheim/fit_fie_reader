@@ -66,12 +66,12 @@ fn setup() -> clap::ArgMatches {
         .get_matches()
 }
 
-fn get_arguments<'a>(argument_matcher: clap::ArgMatches) -> Arguments {
+fn get_arguments(argument_matcher: clap::ArgMatches) -> Arguments {
     let input: Box<dyn Read> = get_input(&argument_matcher);
     let output: Box<dyn Write> = get_output(&argument_matcher);
     let regexp: Vec<String> = get_regexp(&argument_matcher);
-    let before_lines: i32 = get_argument_value(&argument_matcher, "before", 0);
-    let after_lines: i32 = get_argument_value(&argument_matcher, "after", 0);
+    let before_lines: i32 = get_argument_value(&argument_matcher, "before", &0);
+    let after_lines: i32 = get_argument_value(&argument_matcher, "after", &0);
 
     Arguments {
         input,
@@ -114,11 +114,11 @@ fn get_input(argument_matcher: &clap::ArgMatches) -> Box<dyn Read> {
 fn get_argument_value(
     argument_matcher: &clap::ArgMatches,
     argument_name: &str,
-    default: i32,
+    default: &i32,
 ) -> i32 {
     *argument_matcher
         .get_one::<i32>(argument_name)
-        .unwrap_or(&default)
+        .unwrap_or(default)
 
 }
 
