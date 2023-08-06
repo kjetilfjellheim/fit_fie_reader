@@ -124,7 +124,7 @@ fn get_argument_value(
 
 fn parse(arguments: Arguments) {
     let mut before_buffer: CircularBuffer<String> =
-        CircularBuffer::<String>::new(arguments.before_lines.clone() as usize);
+        CircularBuffer::<String>::new(arguments.before_lines as usize);
     let mut after_line: i32 = 0;
     let input = arguments.input;
     let mut output = arguments.output;
@@ -159,7 +159,7 @@ fn parse(arguments: Arguments) {
 
 fn is_match_any(line: &String, regexps: &Vec<Regex>) -> bool {
     for regexp in regexps {
-        if regexp.is_match(&line) {
+        if regexp.is_match(line) {
             return true;
         }
     }
@@ -175,6 +175,6 @@ fn output_before_lines(before_buffer: &mut CircularBuffer<String>, output: &mut 
 }
 
 fn output_line(line: &String, output: &mut Box<dyn Write>) {
-    output.write_all(&line.as_bytes()).unwrap();
+    output.write_all(line.as_bytes()).unwrap();
     output.write_all(b"\n").unwrap();
 }
