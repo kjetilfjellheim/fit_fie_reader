@@ -119,7 +119,6 @@ fn get_argument_value(
     *argument_matcher
         .get_one::<i32>(argument_name)
         .unwrap_or(default)
-
 }
 
 fn parse(arguments: Arguments) {
