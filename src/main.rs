@@ -1,18 +1,18 @@
 extern crate queues;
 
 use clap::{arg, command};
-use std::io::{BufReader, BufWriter, Write, Read };
-use std::io::prelude::BufRead;
-use std::fs::File;
+use queues::*;
 use regex::Regex;
-use queues::{*};
+use std::fs::File;
+use std::io::prelude::BufRead;
+use std::io::{BufReader, BufWriter, Read, Write};
 
 struct Arguments {
     input: Box<dyn Read>,
     output: Box<dyn Write>,
     regexp: Vec<String>,
     before_lines: i32,
-    after_lines: i32
+    after_lines: i32,
 }
 
 fn main() {
@@ -21,7 +21,6 @@ fn main() {
     let arguments = get_arguments(argument_matcher);
 
     parse(arguments);
-
 }
 
 fn setup() -> clap::ArgMatches {
@@ -79,17 +78,17 @@ fn get_arguments<'a>(argument_matcher: clap::ArgMatches) -> Arguments {
         output: output,
         regexp: regxp,
         before_lines: before_lines,
-        after_lines: after_lines
+        after_lines: after_lines,
     }
 }
 
 fn get_regexp(argument_matcher: &clap::ArgMatches) -> Vec<String> {
-    argument_matcher.get_many::<String>("regexp")
+    argument_matcher
+        .get_many::<String>("regexp")
         .unwrap_or_default()
         .map(|v| v.to_string())
         .collect::<Vec<String>>()
 }
-
 
 fn get_output(argument_matcher: &clap::ArgMatches) -> Box<dyn Write> {
     let mut output: Box<dyn Write> = Box::new(std::io::stdout());
@@ -112,17 +111,29 @@ fn get_input(argument_matcher: &clap::ArgMatches) -> Box<dyn Read> {
     input
 }
 
-fn get_argument_value(argument_matcher: &clap::ArgMatches, argument_name: &str, default: i32) -> i32 {
-   argument_matcher.get_one(argument_name).unwrap_or(&default).clone()
+fn get_argument_value(
+    argument_matcher: &clap::ArgMatches,
+    argument_name: &str,
+    default: i32,
+) -> i32 {
+    argument_matcher
+        .get_one(argument_name)
+        .unwrap_or(&default)
+        .clone()
 }
 
 fn parse(arguments: Arguments) {
-    let mut before_buffer: CircularBuffer<String> = CircularBuffer::<String>::new(arguments.before_lines.clone() as usize);
+    let mut before_buffer: CircularBuffer<String> =
+        CircularBuffer::<String>::new(arguments.before_lines.clone() as usize);
     let mut after_line: i32 = 0;
     let input = arguments.input;
     let mut output = arguments.output;
     let reader = BufReader::new(input);
-    let regexps = arguments.regexp.into_iter().map(|r| Regex::new(&r).expect("Invalid regular expression")).collect::<Vec<Regex>>();
+    let regexps = arguments
+        .regexp
+        .into_iter()
+        .map(|r| Regex::new(&r).expect("Invalid regular expression"))
+        .collect::<Vec<Regex>>();
     for line in reader.lines() {
         match line {
             Ok(line) => {
@@ -136,9 +147,11 @@ fn parse(arguments: Arguments) {
                 } else {
                     let _ = before_buffer.add(line);
                 }
-            },
+            }
             Err(e) => {
-                std::io::stderr().write_all(format!("Error reading line: {}", e).as_bytes()).unwrap();
+                std::io::stderr()
+                    .write_all(format!("Error reading line: {}", e).as_bytes())
+                    .unwrap();
             }
         }
     }
@@ -159,7 +172,7 @@ fn output_before_lines(before_buffer: &mut CircularBuffer<String>, output: &mut 
         match before_line {
             Ok(before_line) => {
                 output_line(&before_line, output);
-            },
+            }
             Err(_) => {}
         }
     }
