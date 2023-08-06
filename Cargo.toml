@@ -1,5 +1,5 @@
 [package]
-name = "fit_file_reader"
+name = "file_parser"
 version = "0.1.0"
 edition = "2021"
 authors = ["Kjetil Fjellheim <kjetil@forgottendonkey.net>"]
