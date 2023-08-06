@@ -159,7 +159,7 @@ fn parse(arguments: Arguments) {
 
 fn is_match_any(line: &String, regexps: &Vec<Regex>) -> bool {
     for regexp in regexps {
-        if regexp.is_match(line) {
+        if regexp.is_match(line.as_str()) {
             return true;
         }
     }
