@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 authors = ["Kjetil Fjellheim <kjetil@forgottendonkey.net>"]
 
+[build]
+profiler = true
+
 [dependencies]
 regex = "1.9.1"
 
@@ -13,3 +16,7 @@ features = ["derive", "cargo"]
 
 [dependencies.queues]
 version = "1.1.0"
+
+[dev-dependencies]
+assert_cmd = "2.0.12"
+assert_fs = "1.0.13"

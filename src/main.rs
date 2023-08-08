@@ -17,9 +17,7 @@ struct Arguments {
 
 fn main() {
     let argument_matcher: clap::ArgMatches = setup();
-
     let arguments = get_arguments(argument_matcher);
-
     parse(arguments);
 }
 
@@ -103,7 +101,6 @@ fn get_output(argument_matcher: &clap::ArgMatches) -> Box<dyn Write> {
 fn get_input(argument_matcher: &clap::ArgMatches) -> Box<dyn Read> {
     let mut input: Box<dyn Read> = Box::new(std::io::stdin());
     if let Some(input_path) = argument_matcher.get_one::<String>("input") {
-        println!("{}", input_path);
         let file_result = Box::new(File::open(input_path).unwrap());
         let reader = BufReader::new(file_result);
         input = Box::new(reader);
@@ -173,7 +170,84 @@ fn output_before_lines(before_buffer: &mut CircularBuffer<String>, output: &mut 
     }
 }
 
-fn output_line(line: &String, output: &mut Box<dyn Write>) {
+fn output_line(line: &String, output: &mut dyn Write) {
     output.write_all(line.as_bytes()).unwrap();
     output.write_all(b"\n").unwrap();
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use assert_cmd::Command;
+
+    #[test]
+    fn test_with_in_memory() {
+        let result = "Test\n";
+        let input = "Test".to_string();
+        let mut output: Box<Vec<u8>> = Box::new(Vec::new());
+        output_line(&input, &mut output);
+        assert_eq!(result.as_bytes(), output.as_slice());
+    }
+
+    #[test]
+    fn test_stdin_stdout() {
+        let mut cmd = Command::cargo_bin("iawk").expect("Could not find iawk.");
+        cmd.arg("--regexp=[e]");
+        cmd.write_stdin(String::from("abc\ndef\nghi"));
+        cmd.assert().success();
+        let output = cmd.output().unwrap();
+        assert_eq!(b"def\n", output.stdout.as_slice());
+    }
+
+    #[test]
+    fn test_stdin_stdout_2() {
+        let mut cmd = Command::cargo_bin("iawk").expect("Could not find iawk.");
+        cmd.arg("--regexp=[ae]");
+        cmd.write_stdin(String::from("abc\ndef\nghi"));
+        cmd.assert().success();
+        let output = cmd.output().unwrap();
+        assert_eq!(b"abc\ndef\n", output.stdout.as_slice());
+    }
+
+    #[test]
+    fn test_stdin_stdout_3() {
+        let mut cmd = Command::cargo_bin("iawk").expect("Could not find iawk.");
+        cmd.arg("--regexp=[a]");
+        cmd.arg("--regexp=[e]");
+        cmd.write_stdin(String::from("abc\ndef\nghi"));
+        cmd.assert().success();
+        let output = cmd.output().unwrap();
+        assert_eq!(b"abc\ndef\n", output.stdout.as_slice());
+    }
+
+    #[test]
+    fn test_file_input_1() {
+        let mut expected_file = File::open("./testdata/expected/expected1.txt").unwrap();
+        let mut expected_data: Vec<u8> = Vec::new();
+        let mut read_data: Vec<u8> = Vec::new();
+        let _ = expected_file.read_to_end(&mut expected_data).unwrap();
+        let mut cmd = Command::cargo_bin("iawk").expect("Could not find iawk.");
+        cmd.arg("--regexp=king");
+        cmd.arg("--input=./testdata/input/input1.txt");
+        cmd.assert().success();
+        let output = cmd.output().unwrap();
+        let _ = output.stdout.as_slice().read_to_end(&mut read_data);
+        assert_eq!(expected_data, read_data);
+    }
+
+    #[test]
+    fn test_file_input_2() {
+        let mut expected_file = File::open("./testdata/expected/expected2.txt").unwrap();
+        let mut expected_data: Vec<u8> = Vec::new();
+        let mut read_data: Vec<u8> = Vec::new();
+        let _ = expected_file.read_to_end(&mut expected_data).unwrap();
+        let mut cmd = Command::cargo_bin("iawk").expect("Could not find iawk.");
+        cmd.arg("--regexp=[\"England\"|\"Ireland]\"");
+        cmd.arg("--input=./testdata/input/input2.txt");
+        cmd.assert().success();
+        let output = cmd.output().unwrap();
+        let _ = output.stdout.as_slice().read_to_end(&mut read_data);
+        assert_eq!(expected_data, read_data);
+    }
 }
