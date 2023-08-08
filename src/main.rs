@@ -185,7 +185,7 @@ mod tests {
     fn test_with_in_memory() {
         let result = "Test\n";
         let input = "Test".to_string();
-        let mut output: Box<Vec<u8>> = Box::new(Vec::new());
+        let mut output: Box<Vec<u8>> = Box::default();
         output_line(&input, &mut output);
         assert_eq!(result.as_bytes(), output.as_slice());
     }
